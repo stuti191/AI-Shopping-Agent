@@ -1,4 +1,4 @@
-# 🛍️ Shopping Agent
+# 🛍️ AI Shopping Agent
 
 An AI-powered shopping assistant built with **Python** and **Streamlit** that helps users discover products, explore customer reviews, and receive personalized shopping recommendations through an intuitive web interface.
 
@@ -25,7 +25,7 @@ An AI-powered shopping assistant built with **Python** and **Streamlit** that he
 ## 📁 Project Structure
 
 ```text
-Shopping-Agent/
+AI-Shopping-Agent/
 │
 ├── app.py                 # Streamlit application
 ├── shoppingAgent.py       # Shopping recommendation logic
@@ -44,13 +44,13 @@ Shopping-Agent/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/stuti191/Shopping-Agent.git
+git clone https://github.com/stuti191/AI-Shopping-Agent.git
 ```
 
 ### 2. Navigate to the project folder
 
 ```bash
-cd Shopping-Agent
+cd AI-Shopping-Agent
 ```
 
 ### 3. Install the required dependencies
@@ -59,7 +59,7 @@ cd Shopping-Agent
 pip install -r requirements.txt
 ```
 
-> If you don't have a `requirements.txt` yet, you can install Streamlit manually:
+If you don't have a `requirements.txt` yet, install Streamlit manually:
 
 ```bash
 pip install streamlit
@@ -73,7 +73,6 @@ streamlit run app.py
 
 ---
 
----
 
 ## 🌱 Future Improvements
 
@@ -93,7 +92,7 @@ Contributions, suggestions, and improvements are welcome. Feel free to fork the 
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the **LICENSE** file for details.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ---
 
