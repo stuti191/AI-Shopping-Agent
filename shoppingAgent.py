@@ -1,24 +1,30 @@
-import base64
+# import base64
 import json
 import os
 import sqlite3
 from typing import Optional
 
 from dotenv import load_dotenv
+from google import genai
+from PIL import Image
 from langchain.agents import create_agent
 from langchain.tools import tool
-from langchain_core.messages import HumanMessage
+# from langchain_core.messages import HumanMessage
 from langchain_groq import ChatGroq
 
 from reviewsAPI import get_product_rating
 
 load_dotenv()
 
+gemini_client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
 DB_PATH = os.path.join(os.path.dirname(__file__), "store.db")
 
-llm = ChatGroq(model="qwen/qwen3-32b", temperature=0)
+llm = ChatGroq(model="openai/gpt-oss-120b", temperature=0)
 
-vision_llm = ChatGroq(model="meta-llama/llama-4-scout-17b-16e-instruct", temperature=0)
+
 
 
 # ---------------------------------------------------------------------------
@@ -140,34 +146,58 @@ def describe_product_image(image_path: str) -> str:
     Use this when the user uploads a photo of a product they are interested in.
     The returned attributes can be used directly with search_products.
     """
-    with open(image_path, "rb") as f:
-        image_data = base64.b64encode(f.read()).decode()
+    # with open(image_path, "rb") as f:
+    #     image_data = base64.b64encode(f.read()).decode()
 
-    ext = os.path.splitext(image_path)[1].lower().lstrip(".")
-    # suppose image_path is "honey.jpg", then os.path.splitext(image_path) returns ("honey", ".jpg"). We take the second element (the extension), convert it to lowercase, and remove the leading dot. So ext becomes "jpg".
-    mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
-    # mime type is used to tell the browser or any other software what kind of file it is. For jpg and jpeg files, we use "image/jpeg". For other extensions, we use "image/<ext>", where <ext> is the actual extension (like png, gif, etc.).
-    message = HumanMessage(content=[
-        {
-            "type": "image_url",
-            "image_url": {"url": f"data:{mime};base64,{image_data}"},
-        },
-        {
-            "type": "text",
-            "text": (
-                "Look at this product image and extract its key attributes. "
-                "Return ONLY a JSON object with these fields:\n"
-                "- product_type: what kind of product it is (e.g. honey, olive oil, almonds)\n"
-                "- search_query: a short keyword to search for it (e.g. 'honey', 'olive oil')\n"
-                "- is_organic: true if the label says organic, false if not, null if unclear\n"
-                "- description: one sentence describing the product"
-            ),
-        },
-    ])
-    # the human message consists of the image and text instructions. The image is provided as a data URL with the appropriate MIME type and base64-encoded image data. The text instructs the model to analyze the image and return a JSON object with specific fields describing the product.
+    # ext = os.path.splitext(image_path)[1].lower().lstrip(".")
+    # # suppose image_path is "honey.jpg", then os.path.splitext(image_path) returns ("honey", ".jpg"). We take the second element (the extension), convert it to lowercase, and remove the leading dot. So ext becomes "jpg".
+    # mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+    # # mime type is used to tell the browser or any other software what kind of file it is. For jpg and jpeg files, we use "image/jpeg". For other extensions, we use "image/<ext>", where <ext> is the actual extension (like png, gif, etc.).
+    # message = HumanMessage(content=[
+    #     {
+    #         "type": "image_url",
+    #         "image_url": {"url": f"data:{mime};base64,{image_data}"},
+    #     },
+    #     {
+    #         "type": "text",
+    #         "text": (
+    #             "Look at this product image and extract its key attributes. "
+    #             "Return ONLY a JSON object with these fields:\n"
+    #             "- product_type: what kind of product it is (e.g. honey, olive oil, almonds)\n"
+    #             "- search_query: a short keyword to search for it (e.g. 'honey', 'olive oil')\n"
+    #             "- is_organic: true if the label says organic, false if not, null if unclear\n"
+    #             "- description: one sentence describing the product"
+    #         ),
+    #     },
+    # ])
+    # # the human message consists of the image and text instructions. The image is provided as a data URL with the appropriate MIME type and base64-encoded image data. The text instructs the model to analyze the image and return a JSON object with specific fields describing the product.
 
-    response = vision_llm.invoke([message])
-    return response.content
+    # response = vision_llm.invoke([message])
+    # return response.content
+    image = Image.open(image_path)
+
+    prompt = """
+Look at this product image.
+
+Return ONLY this JSON:
+
+{
+  "product_type":"",
+  "search_query":"",
+  "is_organic": true,
+  "description":""
+}
+
+Do not return markdown.
+Return only JSON.
+"""
+
+    response = gemini_client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[prompt, image]
+    )
+
+    return response.text
 
 
 # ---------------------------------------------------------------------------
